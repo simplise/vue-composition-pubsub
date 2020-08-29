@@ -4,7 +4,6 @@ https://simplise.github.io/vue-composition-pubsub/
 
 A component to handle global events and data 
 
-
 ## Installation
 
 ### NPM

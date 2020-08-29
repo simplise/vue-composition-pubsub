@@ -12,12 +12,6 @@ function useProductDataStore () {
   console.log('useProductDataStore')
   // Cache First API Second Storategy
   const initialData = (id:string) => {
-    // Emulate Fetch Function
-    setTimeout(() => {
-      const fetcheData : IProduct = { id, title: `Created ${date.formatDate(Date.now(), 'YYYY-MM-DDTHH:mm:ss.SSSZ')}`, price: 0, timestamp: Date.now() }
-      SessionStorage.set(id, fetcheData)
-      subscription.publish(id, fetcheData)
-    }, 1000)
     // Cache First
     const cacheData = SessionStorage.getItem<IProduct>(id)
     if (cacheData) {
@@ -26,13 +20,24 @@ function useProductDataStore () {
     // Initialize Data
     return { id, title: '', price: 0, timestamp: 0 }
   }
+  //
+  const asyncState = (id:string) => {
+    // Emulate Fetch Function
+    return new Promise<IProduct>((resolve) => {
+      setTimeout(() => {
+        const fetcheData : IProduct = { id, title: `Created ${date.formatDate(Date.now(), 'YYYY-MM-DDTHH:mm:ss.SSSZ')}`, price: 0, timestamp: Date.now() }
+        SessionStorage.set(id, fetcheData)
+        resolve(fetcheData)
+      }, 1000)
+    })
+  }
   // Return
-  const subscription = useTopic<IProduct>(initialData, { useRefreshEvent: 'ProductRefreshEvent' })
+  const subscription = useTopic<IProduct>(initialData, { asyncState, useRefreshEvent: 'ProductRefreshEvent' })
   return {
     ...subscription
   }
 }
 
-const productDataStore = useProductDataStore()
+// const productDataStore = useProductDataStore()
 
-export default productDataStore
+export default useProductDataStore

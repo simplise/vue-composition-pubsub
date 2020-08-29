@@ -31,9 +31,9 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onBeforeUnmount } from '@vue/composition-api'
+import { defineComponent, onBeforeUnmount, watch } from '@vue/composition-api'
 import { uid } from 'quasar'
-import productListStore from 'src/compositionStore/productListStore'
+import useProductListStore from '../compositionStore/useProductListStore'
 
 export default defineComponent({
   props: {
@@ -43,9 +43,9 @@ export default defineComponent({
     }
   },
   setup (props) {
-    const { subscribe } = productListStore
+    const { subscribe, refresh } = useProductListStore()
     const subscription = subscribe(props.id)
-    const state = subscription.data
+    const state = subscription.valueTask.state
     onBeforeUnmount(() => {
       subscription.unSubscribe()
     })
@@ -54,11 +54,11 @@ export default defineComponent({
       state.value.unshift({ id: uid(), timestamp: Date.now() })
       state.value[1].id = uid()
     }
-    // if (subscription.refreshEvent) {
-    //   watch(subscription.refreshEvent, (event) => {
-    //     refresh(event.id)
-    //   })
-    // }
+    if (subscription.refreshEvent) {
+      watch(subscription.refreshEvent, async (event) => {
+        await refresh(event.id)
+      })
+    }
     return {
       state,
       onSubmit

@@ -11,7 +11,7 @@
 
 <script lang="ts">
 import { defineComponent, ref } from '@vue/composition-api'
-import primitiveEventTopic from 'src/compositionStore/primitiveEventTopic'
+import primitiveEventTopic from '../compositionStore/primitiveEventTopic'
 
 export default defineComponent({
   setup () {

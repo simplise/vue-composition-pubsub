@@ -7,6 +7,7 @@ function useRealtimeAPI () {
   setInterval(() => {
     console.log('realtimeEvent')
     publish('ProductRefreshEvent', { id: 'testValue' })
+    // publish('ProductListRefreshEvent', { id: 'testValue' })
   }, 10000)
 }
 

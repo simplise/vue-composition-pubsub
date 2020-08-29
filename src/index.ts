@@ -1,5 +1,6 @@
 // import Vue from 'vue'
-import { ref, Ref, reactive } from '@vue/composition-api' //VueCompositionApi , 
+import { valueTask , IValueTask } from './valueTask'
+import { Ref } from '@vue/composition-api'
 
 // Vue.use(VueCompositionApi)
 
@@ -8,22 +9,23 @@ import { ref, Ref, reactive } from '@vue/composition-api' //VueCompositionApi ,
 interface ISubscriptionReference
 {
   subscribers : Set<symbol>
-  data : Ref<unknown>
+  valueTask : IValueTask<unknown>
 }
 
 interface ISubscription<T>
 {
   subscriber : symbol
-  data : Ref<T>
+  valueTask : IValueTask<T>
   id: string
   unSubscribe(): void
   refreshEvent? : Ref<IEventMessage>
 }
-interface IUseOptions
+interface IUseOptions<T>
 {
+  asyncState? : (id:string) => Promise<T>
   // usePublishRequestEvent? : string //非同期API取得用に作成したが未使用
   useRefreshEvent? : string //watchはコンポーネントsetup内部でしか動作しないため未使用
-  publishOnRefresh? : boolean // refresh時にTopic内でPublish するかどうか
+  // publishOnRefresh? : boolean // refresh時にTopic内でPublish するかどうか
   synbolDescription? : string
   testID? :string
 }
@@ -31,74 +33,45 @@ interface IUseOptions
 const defaultOptions = { 
   useRefreshEvent : '', 
   // usePublishRequestEvent: '', 
-  publishOnRefresh: false,
+  // publishOnRefresh: false,
   synbolDescription: 'subscriber', 
-  testID: 'test' }
+  testID: 'test' 
+}
 
-// https://qiita.com/suin/items/e8cf3404161cc90821d8
-// https://qiita.com/usk81/items/cc7541c2b50d47373e32
-const isObject = (x: unknown): boolean => x !== null && typeof x === 'object' && Object.prototype.toString.call(x) !== '[object Array]'
-
-export default function useTopic<T> (initialData : (id:string,isRefreshRequest?:boolean) => T, useOptions? : IUseOptions) {
+export default function useTopic<T> (initialState : (id:string) => T, useOptions? : IUseOptions<T>) {
   console.log('Topic init')
   // Subscriptions
   const subscriptions = new Map<string, ISubscriptionReference>()
   // Private Setting
   const options = useOptions ? Object.assign(defaultOptions,useOptions) : defaultOptions
-  const isObj = isObject(initialData(options.testID))
   // RefreshEvent
   const refreshEventSubscription = options.useRefreshEvent ? eventTopic.subscribe(options.useRefreshEvent) : undefined
-  // if(refreshEventSubscription)
-  // {
-  //   watch(refreshEventSubscription.data , (id) => {
-  //     console.log('refreshEvent')
-  //     const data =  initialData(id,true)
-  //     publish(id, data)
-  //   } )
-  // }
   // Publish Function
   const publish = (id: string, data: T) => {
     const subscription = subscriptions.get(id)
     if (subscription) {
-      if (isObj) {
-        subscription.data.value = reactive(<Record<string, unknown>>data)
-      } else {
-        subscription.data.value = data
-      }
+        subscription.valueTask.state.value = data
     }
   }
   // Subscribe Function
   const subscribe = (id : string) : ISubscription<T> => {
     const subscriber = Symbol(options.synbolDescription)
-    let data : Ref<T>
+    let value : IValueTask<T>
     const subscription = subscriptions.get(id)
     if (subscription) {
       subscription.subscribers.add(subscriber)
-      data = <Ref<T>>subscription.data
+      value = <IValueTask<T>>subscription.valueTask
     } else {
-      if(isObj)
-      {
-        data = <Ref<T>>ref<T>(<T>reactive(<Record<string, unknown>>initialData(id)))
-      }
-      else
-      {
-        data = <Ref<T>>ref<T>(initialData(id))
-      }
-      subscriptions.set(id, { subscribers: new Set([subscriber]), data })
+      const asyncState = useOptions && useOptions.asyncState ? useOptions.asyncState(id) : undefined
+      value = valueTask<T>(initialState(id), asyncState) // <Ref<T>>ref<T>()
+      subscriptions.set(id, { subscribers: new Set([subscriber]), valueTask: value })
     }
-    // if(options.useRefreshEvent && refreshEventSubscription)
-    // {
-    //    refreshEventSubscription.data
-    // }
-    // if (options.usePublishRequestEvent) {
-    //   stringEventTopic.publish(options.usePublishRequestEvent, id)
-    // }
     return {
       id,
       subscriber,
-      data,
+      valueTask: value,
       unSubscribe: () => { unSubscribe(id, subscriber) },
-      refreshEvent: refreshEventSubscription ? refreshEventSubscription.data : undefined
+      refreshEvent: refreshEventSubscription ? refreshEventSubscription.valueTask.state : undefined
     }
   }
   // UnSubscribe Function
@@ -113,14 +86,20 @@ export default function useTopic<T> (initialData : (id:string,isRefreshRequest?:
   }
   // Publish Function
   const refresh = (id: string) => {
-    if(options.publishOnRefresh)
-    {
-      publish(id,initialData(id,true))
+    console.log('refresh')
+    const subscription = subscriptions.get(id)
+    if (subscription) {
+      if(useOptions && useOptions.asyncState)
+      {
+        const taskValue = <IValueTask<T>>subscription.valueTask
+        const asyncState = useOptions && useOptions.asyncState ? useOptions.asyncState(id) : undefined
+        if(asyncState)
+        {
+          return taskValue.refresh(asyncState)
+        }
+      }
     }
-    else
-    {
-      initialData(id,true)
-    }
+    return undefined
   }
   // Result
   return {

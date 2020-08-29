@@ -14,7 +14,7 @@
 
 <script lang="ts">
 import { defineComponent, onBeforeUnmount, watch } from '@vue/composition-api'
-import productDataStore from 'src/compositionStore/productDataStore'
+import useProductDataStore from '../compositionStore/useProductDataStore'
 
 export default defineComponent({
   props: {
@@ -24,15 +24,15 @@ export default defineComponent({
     }
   },
   setup (props) {
-    const { subscribe, refresh } = productDataStore
+    const { subscribe, refresh } = useProductDataStore()
     const subscription = subscribe(props.id)
-    const state = subscription.data
+    const state = subscription.valueTask.state
     onBeforeUnmount(() => {
       subscription.unSubscribe()
     })
     if (subscription.refreshEvent) {
-      watch(subscription.refreshEvent, (event) => {
-        refresh(event.id)
+      watch(subscription.refreshEvent, async (event) => {
+        await refresh(event.id)
       })
     }
     return {

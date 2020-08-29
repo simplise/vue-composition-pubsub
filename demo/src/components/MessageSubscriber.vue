@@ -20,14 +20,14 @@
 
 <script lang="ts">
 import { defineComponent, onBeforeUnmount, watch, ref } from '@vue/composition-api'
-import messageTopic, { IMessage } from 'src/compositionStore/messageTopic'
+import messageTopic, { IMessage } from '../compositionStore/messageTopic'
 
 export default defineComponent({
   setup () {
     const messages = ref<Array<IMessage>>([])
     const { subscribe } = messageTopic
     const subscription = subscribe('message')
-    watch(subscription.data, (value) => {
+    watch(subscription.valueTask.state, (value) => {
       console.log('subscribe')
       messages.value.unshift(value)
     })

@@ -17,14 +17,14 @@
 
 <script lang="ts">
 import { defineComponent, onBeforeUnmount, watch, reactive } from '@vue/composition-api'
-import primitiveEventTopic from 'src/compositionStore/primitiveEventTopic'
+import primitiveEventTopic from '../compositionStore/primitiveEventTopic'
 
 export default defineComponent({
   setup () {
     const messages = reactive<Array<string>>([])
     const { subscribe } = primitiveEventTopic
     const subscription = subscribe('primitiveEvent')
-    watch(subscription.data, (value) => {
+    watch(subscription.valueTask.state, (value) => {
       console.log('subscribe')
       messages.unshift(value)
     })

@@ -12,7 +12,7 @@
 <script lang="ts">
 import { uid } from 'quasar'
 import { defineComponent, reactive } from '@vue/composition-api'
-import messageTopic from 'src/compositionStore/messageTopic'
+import messageTopic from '../compositionStore/messageTopic'
 
 export default defineComponent({
   setup () {
