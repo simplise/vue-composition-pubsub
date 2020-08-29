@@ -1,6 +1,6 @@
 {
   "name": "vue-composition-pubsub",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "A Component to handle global events and data",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
