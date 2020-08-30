@@ -1,6 +1,6 @@
 {
   "name": "vue-composition-pubsub",
-  "version": "0.2.10",
+  "version": "0.2.11",
   "description": "A Component to handle global events and data",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -8,7 +8,7 @@
     "build:src": "rimraf dist && yarn version && tsc",
     "build:demo": "cd demo && quasar build",
     "dev:demo": "cd demo && quasar dev",
-    "release": "yarn publish && rimraf docs && yarn cpx -C demo/dist/spa/** docs"
+    "release": "tsc && yarn publish && rimraf docs && yarn cpx -C demo/dist/spa/** docs"
   },
   "repository": {
     "type": "git",
