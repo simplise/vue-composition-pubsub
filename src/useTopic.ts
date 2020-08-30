@@ -1,5 +1,5 @@
 // import Vue from 'vue'
-import { valueTask , IValueTask } from './valueTask'
+import { valueTask, IValueTask } from './valueTask'
 import { Ref } from '@vue/composition-api'
 
 // Vue.use(VueCompositionApi)
@@ -12,7 +12,7 @@ interface ISubscriptionReference
   valueTask : IValueTask<unknown>
 }
 
-interface ISubscription<T>
+export interface ISubscription<T>
 {
   subscriber : symbol
   valueTask : IValueTask<T>
@@ -20,22 +20,22 @@ interface ISubscription<T>
   unSubscribe(): void
   refreshEvent? : Ref<IEventMessage>
 }
-interface IUseOptions<T>
+export interface IUseOptions<T>
 {
   asyncState? : (id:string) => Promise<T>
   // usePublishRequestEvent? : string //非同期API取得用に作成したが未使用
-  useRefreshEvent? : string //watchはコンポーネントsetup内部でしか動作しないため未使用
+  useRefreshEvent? : string // watchはコンポーネントsetup内部でしか動作しないため未使用
   // publishOnRefresh? : boolean // refresh時にTopic内でPublish するかどうか
   synbolDescription? : string
   testID? :string
 }
 
-const defaultOptions = { 
-  useRefreshEvent : '', 
-  // usePublishRequestEvent: '', 
+const defaultOptions = {
+  useRefreshEvent: '',
+  // usePublishRequestEvent: '',
   // publishOnRefresh: false,
-  synbolDescription: 'subscriber', 
-  testID: 'test' 
+  synbolDescription: 'subscriber',
+  testID: 'test'
 }
 
 export function useTopic<T> (initialState : (id:string) => T, useOptions? : IUseOptions<T>) {
@@ -43,14 +43,14 @@ export function useTopic<T> (initialState : (id:string) => T, useOptions? : IUse
   // Subscriptions
   const subscriptions = new Map<string, ISubscriptionReference>()
   // Private Setting
-  const options = useOptions ? Object.assign(defaultOptions,useOptions) : defaultOptions
+  const options = useOptions ? Object.assign(defaultOptions, useOptions) : defaultOptions
   // RefreshEvent
   const refreshEventSubscription = options.useRefreshEvent ? eventTopic.subscribe(options.useRefreshEvent) : undefined
   // Publish Function
   const publish = (id: string, data: T) => {
     const subscription = subscriptions.get(id)
     if (subscription) {
-        subscription.valueTask.state.value = data
+      subscription.valueTask.state.value = data
     }
   }
   // Subscribe Function
@@ -89,12 +89,10 @@ export function useTopic<T> (initialState : (id:string) => T, useOptions? : IUse
     console.log('refresh')
     const subscription = subscriptions.get(id)
     if (subscription) {
-      if(useOptions && useOptions.asyncState)
-      {
+      if (useOptions && useOptions.asyncState) {
         const taskValue = <IValueTask<T>>subscription.valueTask
         const asyncState = useOptions && useOptions.asyncState ? useOptions.asyncState(id) : undefined
-        if(asyncState)
-        {
+        if (asyncState) {
           return taskValue.refresh(asyncState)
         }
       }
@@ -113,5 +111,4 @@ interface IEventMessage
   id : string
   payload? : unknown
 }
-export const eventTopic = useTopic<IEventMessage>(() => { return { id:''}} )
-
+export const eventTopic = useTopic<IEventMessage>(() => { return { id: '' } })

@@ -1,8 +1,12 @@
-import { useTopic , eventTopic} from './useTopic'
-import { valueTask } from './valueTask'
+import { useTopic, eventTopic, ISubscription, IUseOptions } from './useTopic'
+import { valueTask, IValueTask, computedValueTask } from './valueTask'
 
 export {
   useTopic,
   eventTopic,
-  valueTask
+  valueTask,
+  computedValueTask,
+  ISubscription,
+  IUseOptions,
+  IValueTask
 }
