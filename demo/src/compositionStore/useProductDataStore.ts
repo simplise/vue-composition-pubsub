@@ -1,4 +1,4 @@
-import useTopic from 'vue-composition-pubsub'
+import { useTopic } from 'vue-composition-pubsub'
 import { SessionStorage, date } from 'quasar'
 
 export interface IProduct{

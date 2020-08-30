@@ -1,4 +1,4 @@
-import useTopic from 'vue-composition-pubsub'
+import { useTopic } from 'vue-composition-pubsub'
 
 export interface IMessage{
   id : string

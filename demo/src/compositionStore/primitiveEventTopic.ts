@@ -1,4 +1,4 @@
-import useTopic from 'vue-composition-pubsub' // './use-global'
+import { useTopic } from 'vue-composition-pubsub' // './use-global'
 
 function usePrimitiveEventTopic () {
   const initialData = () => { return '' }
